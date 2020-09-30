@@ -1,0 +1,368 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Multiples simulations de recaptures et effet de la taille de l'échantillon"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Modules utiles pour les représentations graphiques et la génération de nombres aléatoires :"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import matplotlib.pyplot as plt\n",
+    "import random\n",
+    "from math import sqrt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Initialisation des variables\n",
+    "Génération de la population totale dans la variable `pop_totale` : un nombre aléatoire entre 1000 et 7000. <br/>\n",
+    "Nombre d'individus marqués lors de la première capture, dans la variable `marques`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pop_totale = random.randint(1000,5000)\n",
+    "marques = 900"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Phase de Capture - Marquage\n",
+    "La fonction ci-dessous correspond à la phase de **Capture-Marquage** :<br/>\n",
+    "On représente une sous-population marquée par une liste de M nombres égaux à 1. <br/>\n",
+    "On représente le reste de la population non marquée par une liste de N-M nombres égaux à 0.<br/>\n",
+    "On concatène les deux listes ci-dessus : on obtient une liste de N individus dont les M premiers sont marqués.<br/>\n",
+    "Cette liste est renvoyée par la fonction `creer_population_marquee`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def creer_population_marquee(N, M):\n",
+    "    m0 = [1]*M\n",
+    "    m1 = [0]*(N-M)\n",
+    "    popu = m0+m1\n",
+    "    return popu\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Phase de Recapture \n",
+    "On mélange la liste obtenue par la fonction `creer_population_marquee` : les $n$ premiers éléments de cette liste constituent un échantillon de taille $n$ de cette population.<br/>\n",
+    "La fonction `prelever_echantillon` renvoie un échantillon.<br/>\n",
+    "Cela correspond à la phase de **recapture**."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def prelever_echantillon(P, n):\n",
+    "    random.shuffle(P)\n",
+    "    return P[:n]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Simulation de plusieurs échantillons de même taille\n",
+    "- Création d'une population marquée\n",
+    "- Sur cette population, on simule 100 fois la recapture d'un échantillon de taille **200**\n",
+    "- Représentation graphique des fréquences (nombre d'individus marqués/taille de l'échantillon) obtenues"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "population = creer_population_marquee(pop_totale,marques)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def multi_echantillon(rep, pop, n):\n",
+    "    f = []\n",
+    "    for i in range(rep):\n",
+    "        echantillon = prelever_echantillon(pop, n)\n",
+    "        f.append(sum(echantillon)/len(echantillon))\n",
+    "    return f"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "x = list(range(100))\n",
+    "freq_simul = multi_echantillon(100, population, 200)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ymin = min(freq_simul) \n",
+    "ymax = max(freq_simul)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAmsAAAFACAYAAADjzzuMAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAADl0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uIDIuMi4zLCBodHRwOi8vbWF0cGxvdGxpYi5vcmcvIxREBQAAIABJREFUeJzt3XucJFV58PHfwwJh5aIgI4ksCJj1snhhYYIoYoyyiFEBFS+rJHgLouBqeNXgFcX4arxFUURRQfRVEBR1NQSyEm5RUWZd5LJIIKCyQpY1XETYwO76vH9UDbTLzHTNTFd3dffv+/n0Z7tOV3U/VadP7zNV59SJzESSJEnNtEmvA5AkSdLkTNYkSZIazGRNkiSpwUzWJEmSGsxkTZIkqcFM1iRJkhrMZE2SJKnBTNYkSZIazGRNkiSpwTbtdQCdtP322+cuu+zS6zAkSZLaWr58+W8zc6TdegOVrO2yyy6MjY31OgxJkqS2IuJXVdbzMqgkSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg9WerEXEgRFxbURcHxHHTrHeoRGRETHaUvaOcrtrI+I5dccqSZLUNJWStSgcFhHvLZd3joi9K2w3BzgReC6wAFgcEQsmWG9rYAnwk5ayBcDLgd2BA4HPlu8nSZI0NCZN1iJi35bk6LPAU4HF5fJdFElYO3sD12fmDZl5H3AGcPAE630A+Ajwvy1lBwNnZOa9mXkjcH35fpIkSUNjqjNrCZxUPn9KZh5FmUxl5u3A5hXef0fgppblVWXZ/SJiIbBTZn5/uttKkiQNuk0neyEzfxQR95SL68qzbAkQESPAHyq8f0z01ve/GLEJ8M/Aq6a7bct7HAEcAbDzzjtXCEmSJKl/TNlnLTMvL5+eAHwbeEREfBD4D+D/Vnj/VcBOLcvzgJtblrcGngBcGBG/BPYBlpaDDNptOx7jyZk5mpmjIyMjFUKSJEnqH5OeWWuVmV+LiOXAsynOeB2SmddU2PQyYH5E7Ar8hmLAwCta3vdOYPvx5Yi4EHhrZo5FxFrg6xHxCeCRwHzgp5X2SpIkaUBMmaxFxHYti7cCp7e+lpm3TbV9Zq6PiKOB84A5wCmZeXVEHA+MZebSKba9OiLOBFYC64GjMnND2z2SJEkaIJH5oG5gD7wYcSNFP7HW/mPjy5mZu9Ub3vSMjo7m2NhYr8OQJElqKyKWZ+Zou/WmPLOWmbt2LiRJkiRNV6U+axHxjInKM/PizoYjSZKkVpWSNeBtLc+3oLg57XLgWR2PSJIkSferOhr0Ba3LEbETxYwDkiRJqtFMJ3JfRXF/NEmSJNWoap+1T/PA7AGbAHsAP68rKEmSJBWq9llrvR/GeuD0zPxhDfFIkiSpRdU+a6fVHYgkSZIerFKftYh4fkSsiIjbIuJ3EXFXRPyu7uAkSZKGXdXLoJ8EXgRcmVNNeSBJkqSOqjoa9CbgKhM1SZKk7qp6Zu3twDkRcRFw73hhZn6ilqgkSZIEVE/WPgj8nmL2gs3rC0eSJEmtqiZr22XmAbVGIkmSpAep2mftBxFhsiZJ0hBZtnI17/3uVSxbubrXoQy1qsnaUcC5EbHWW3dIkjT4lq1czZLTV/CVH/+KJaevMGHroUrJWmZunZmbZObczNymXN6m7uAkSVJvXHLdGtau2wDA2nUbuOS6NT2OaHhN2WctIh6Xmb+IiD0nej0zf1ZPWJIkqZf2mz/CWWOrWLtuA3M3m8N+80d6HdLQajfA4BjgCODjE7yWwLM6HpEkSeq5RQt24ITFC7nkujXsN3+ERQt26HVIQysG6T63o6OjOTY21n5FSZKkHouI5Zk52m69qnODviQiti6fvzsizo6IhbMNUpIkSVOrOhr0PZl5V0Q8HXgOcBrwufrCkiRJElRP1jaU/z4POCkzv4szGUiSJNWuarL2m4j4PPBSijlC/2Qa20qSJGmGqiZcLwXOAw7MzDuA7YC31RaVJEmSgIpzg2bmPcDZLcu3ALfUFZQkSVInLVu5um9vQ+KlTEmSNND6feoskzVJkjTQ+n3qLJM1SZI00PabP8LczeYA9OXUWZX6rEXEi4B/Ah4BRPlIJ3OXJElN1+9TZ1VK1oCPAC/IzGvqDEaSJKkOixbs0HdJ2riql0FXm6hJkiR1X9Uza2MR8Q3gO8C944WZefbkm0iSJGm2qiZr2wD3AAe0lCUt916TJElS51W9Ke6r6w5EkiRJD1apz1pEzIuIb0fErRGxOiK+FRHz6g5OkiRp2FUdYHAqsBR4JLAj8L2yTJIkSTWqmqyNZOapmbm+fHwZ6K87ykmSJPWhqsnabyPisIiYUz4OA/6nzsAkSZJUPVl7DfBS4L+BW4BDyzJJkiTVqOpo0F8DB9UciyRJkjYyZbIWEZ+muJ/ahDJzSccjkiRJ0v3anVkb60oUktQHlq1c3bcTQau3/O5oNqZM1jLztG4FIklNtmzlapacvoK16zZw1tgqTli80P90VYnfHc1Wu8ug32Pqy6D2Y5M0FC65bg1r120AYO26DVxy3Rr/w1Ulfnc0W+0ug36sK1FIUsPtN3+Es8ZWsXbdBuZuNof95nurSVXjd0ezFZmTnjib/ZtHHAh8CpgDfDEzP7zR60cCRwEbgN8DR2TmyojYBbgGuLZc9dLMPLLd542OjubYmN3sJNXDfkeaKb87mkhELM/M0bbrTZWsRcSZmfnSiLiSCS6HZuaTpth2DvCfwCJgFXAZsDgzV7ass01m/q58fhDwxsw8sEzWvp+ZT2i3A61M1tTKH0dJveBvz/QN6zGrmqy1uwz65vLf588ghr2B6zPzhjKgM4CDgfuTtfFErbQlU/SPk6bDDr2SesHfnunzmLU35QwGmXlL+fSNmfmr1gfwxjbvvSNwU8vyqrLsj0TEURHxX8BHgNb7tu0aESsi4qKI2G+yD4mIIyJiLCLG1qxZ0yYkDYuJOvRKUt387Zk+j1l7VaebWjRB2XPbbBMTlE10KfXEzHw08A/Au8viW4CdM3MhcAzw9YjYZqIPycyTM3M0M0dHRuy0qcJ+80eYu9kcADv0Suoaf3umz2PWXrtbd7yB4gzabhFxRctLWwM/bPPeq4CdWpbnATdPsf4ZwEkAmXkvcG/5fHl55u0xeJNeVbRowQ6csHjhUPaBkNQ7/vZMn8esvXYDDB4KbAt8CDi25aW7MvO2Kd84YlOKAQbPBn5DMcDgFZl5dcs68zPzuvL5C4DjMnM0IkaA2zJzQ0TsBlwCPLHdZzrAQJrYMHbeHcZ9bhrrQJpaRwYYZOadwJ3A4nJ05w7lNltFxFblBO+Tbbs+Io4GzqO4dccpmXl1RBwPjGXmUuDoiNgfWAfcDhxebv4M4PiIWE9xW48j2yVqkiY2jJ13h3Gfm8Y6kDqn3WhQAMqk633AauAPZXECk966AyAzzwHO2ajsvS3P3/ygjYrybwHfqhKbpKkN493Th3Gfm8Y6kDqn6gCDtwCPzczdM/OJ5WPKRE1SMwxj591h3OemsQ6kzqk0g0FEXAAsysz19Yc0c/ZZkyY2jH2HhnGfm8Y6kKbWkRkMWt7sS8BjgX+hHKUJkJmfmE2QnWayJkmS+kWnZjAY9+vysXn5kLrCv8wlScOuUrKWme+vOxBpY44mkySp+mjQEeDtwO7AFuPlmfmsmuKSHE0mSRLVR4N+DfgFsCvwfuCXFDe5lWrjaDJJkqr3WXt4Zn4pIt6cmRcBF0XERXUGJjkFiSRJ1ZO1deW/t0TE8yjm+JxXT0jqV3UMBli0YAeTNA0sB9CoV/zu9Zeqt+54PsX8nDsBnwa2Ad5fThnVGN66o3daBwPM3WyOgwGkNmwz6hW/e81R9dYdlfqsZeb3M/POzLwqM/8qM/dqWqKm3ppoMICkydlm1Ct+9/pPpWQtIkYi4p0RcXJEnDL+qDs49Q8HA0jTY5tRr/jd6z9VL4P+iOIy6HJgw3h5OeF6Y3gZtLfsAyFNj21GveJ3rxk6Pd3U5Zm5R0ciq5HJmiRJ6hcd7bMGfD8i/nqWMQ2VZStX897vXsWylat7HYokqSb+1g+mptXrlGfWIuIuIIEAtqSYxH1duZyZuU03gqyqKWfWHGkjSYPP3/rB1M167ciZtczcOjO3Kf/dJDPntiw3KlFrEkfaSNLg87d+MDWxXquOBn1hRDy0ZflhEXFIfWH1N0faSNLg87d+MDWxXmc8wCAiVmTmwtoim4GmXAYFR9pI0jDwt34wdateOz0a9IrMfNJGZVdm5hNnEWPHNSlZ03DrRkP3P4nhVkf9D9J3apD2RYOr08naKcAdwIkUAw7eBGybma+aZZwdZbKmJuhG51Q7Ng+3Oup/kL5Tg7QvGmydvnXHm4D7gG8AZwJrgaNmHp40uLrRObWJHWDVPXXU/yB9pwZpXySoPjfo3Zl5LPDMzBzNzHdm5t01xyb1pW50Tm1iB1h1Tx31P0jfqUHaFwmmuAwaEZtl5rry+dOALwJbZebOEfFk4PWZ+cbuhdqel0HVFPZZU93ssza1QdoXDa5Z91mLiKOAn2fmf0TET4BDgaXjI0Aj4qrMfEIng54tkzVJktQvOtFn7XPAS8cXMvOmjV7fgBo3JYWk4eZv0uz18hhaf5rIppO9kJkbgCXl4k3lpdCMiM3L8mu6EF+jtY44OmtslSOOJPWUv0mz18tjaP1pMlVHgx5JMfpzR2AVsAeOBnXEkaRG8Tdp9np5DK0/TabqaNDfZuYrM3OHzHxEZh6Wmf9Td3BN54gjSU3ib9Ls9fIYWn+azJQ3xY2I4yhugvv7zPxE16KaoV4MMHDEkaQm8Tdp9np5DK2/4dKRGQwi4vDy6drMPLNTwdVlUEaDDnpjHbT9G7T9GWT9Wlf9GrfUK/3SZjo63VS/GIRkbdCnSRm0/Ru0/Rlk/VpX/Rq31Cv91GY6Mt1URHwvIpZO9uhcuBo36B1MB23/Bm1/Blm/1lW/xi31yiC2mXYDDD4GfHyKhzps0DuYDtr+Ddr+DLJ+rat+jVvqlUFsM14GbaB+udY+U4O2f4O2P4OsX+uqX+OWeqVf2ox91lSrfmkIUt0magvD2D76dZ/7NW4NBpM11aafOm9KdZqoLQBD1z769TehX+PW4OjIAIPyjeZExEc7E5YGwSB23pRmYqK2MIzto1/3uV/j1vBpm6yVc4TuFRHRhXjUBwax86Y0ExO1hWFsH/26z/0at4ZPpcugEfFxYD5wFnD3eHlmnl1faNPnZdDusZ+HVLDPWqFf97lf49Zg6GiftYg4dYLizMzXzCS4upisSZKkflE1Wdu0yptl5qtnH5Im4l91Befia4aqx8JjJs1et9pRr9qrvxOdU/XM2hbAa4HdgS3Gyz2zNjuORCr08jhYBw+oeiw8ZtLsdasd9aq9+jtRTcdGg5a+Cvwp8BzgImAecNfMwxM4EmlcL4+DdfCAqsfCYybNXrfaUa/aq78TnVU1WfvzzHwPcHdmngY8D3hifWENB0ciFXp5HKyDB1Q9Fh4zafa61Y561V79neisqpdBf5qZe0fExcAbgf8GfpqZu1XY9kDgU8Ac4IuZ+eGNXj8SOArYAPweOCIzV5avvYPi8usGYElmnjfVZ/XbZVDwmv44+6w1g33WpO6xz5o6PRr0dcC3gCcBpwJbAe/JzM+32W4O8J/AImAVcBmweDwZK9fZJjN/Vz4/CHhjZh4YEQuA04G9gUcCPwAeU973bUL9mKx1w2wbTD80uH6IUZKkVp0eDfrF8ulFQNuzaS32Bq7PzBvKoM4ADgbuT9bGE7XSlsB49ngwcEZm3gvcGBHXl+/342l8/tBr7eR51tiqaXfynO323dAPMUqSNFOV+qxFxMMj4tMR8bOIWB4Rn4yIh1fYdEfgppblVWXZxu9/VET8F/ARYMk0tz0iIsYiYmzNGjswbmy2nTz7oZNoP8QoSdJMVR1gcAZwK/Bi4FDgt8A3Kmw30RRVD7rumpknZuajgX8A3j3NbU/OzNHMHB0ZsQPjxmbbybMfOon2Q4ySJM1UpcugwHaZ+YGW5X+MiEMqbLcK2KlleR5w8xTrnwGcNMNtNYFFC3bghMULZ9yfa7bbd0M/xChJ0kxVHWDwMWAMOLMsOhTYPTOPa7PdphQDDJ4N/IZigMErMvPqlnXmZ+Z15fMXAMdl5mhE7A58nQcGGJwPzHeAgSRJGgQdHWAAvB44huLmuFDchuPuiDiGYo7QbSbaKDPXR8TRwHnlNqdk5tURcTwwlplLgaMjYn9gHXA7cHi57dURcSbFYIT1wFFTJWrSoGjayNZ+iKdpMTbNoB+fQb8FxnTMJsZ+2L9hVenMWr/wzJr6XdOmaOmHeIBGxdg0TavDThv0aZumYzYx9sP+DaJOTzclqQuaNrK1H+JpWoxNM+jHZ9CnbZqO2cTYD/s3zEzWpAZp2sjWfoinaTE2zaAfn0Gftmk6ZhNjP+zfMPMyqNQwTes30g/xNC3Gphn042OftQfYZ62/dHS6qfINn04xGvPUiBgBtsrMG2cZZ0fVnaz5Re5/1mF9PLad4XGUhken5wY9DhgFHpuZj4mIRwJnZea+sw+1c+pM1ux82f+sw/p4bDvD4ygNl04PMHghcBBwN0Bm3gxsPfPw+o+dL/ufdVgfj21neBwlTaRqsnZfFqfgEiAitqwvpGay82X/sw7r47HtDI+jpIlUvQz6VmA+sAj4EPAa4OuZ+el6w5se+6ypHeuwPh7bzvA4SsOjjgEGi4ADKCZYPy8zl80uxM5zNKgkSeoXnZ5uijI5a1yCps7yr/r6eGylyduB7WN4WNfTV/Uy6F2U/dWAzYHNgLsnmxO0VzyzNjuORKuPx1aavB3YPoaHdf3HOjoaNDO3zsxtyscWwIuBz8w2SDWLI9Hq47GVJm8Hto/hYV3PzIymm8rM7wDP6nAs6jFHotXHYytN3g5sH8PDup6ZqpdBX9SyuAnFDXL/MjOfWldgM+Fl0NmzL0F9PLaSfdZkXbfq9AwGp7Ysrgd+CXwhM2+dcYQ1GORkzS+31D22t2bodD1Yr53Ry/l5B60OO37rjn4wqMmaHTKl7rG9NUOn68F67YyJjiPQlWM7iHXY0QEGETESEe+MiJMj4pTxx+zDVBV2yJS6x/bWDJ2uB+u1MyY6jt06tsNch1UHGHwXeCjwA+BfWh7qAjtkSt1je2uGTteD9doZEx3Hbh3bYa7Dqn3WLs/MPboQz6wM6mVQGLzr9FKT2d6awT5rzWSftc7p9ACDfwR+lJnndCK4ugxysiZJkgZLp6ebejPwzoi4D7iPYn7QbNoMBk03aH8RVFHHPg/jcayqaceml3+BqzOaVl9Ni6cbhnGf9cccDdolgziKpZ069nkYj2NVTTs2vRw1ps7oh+/UoH9/hnGfh0mnR4NGRBwWEe8pl3eKiL1nG+QwGcZRLHXs8zAex6qadmx6OWpMndG0+mpaPN0wjPusB6s6GvSzwFOBV5TLvwdOrCWiATWMo1jq2OdhPI5VNe3Y9HLUmDqjafXVtHi6YRj3WQ9WdYDBzzJzz4hYkZkLy7KfZ+aTa49wGpp8GRSGs9+Bfda6q2nHxj5r/a9p9dW0eLphGPd5WHR6NOhPgKcBl5VJ2wjwb+OJW1M0PVlT//DHsfsG/ZgP+v5JvTKbttXrdtnpZO2VwMuAPYHTgEOB92TmmbMNtJNM1tQJdujtvkE/5oO+f1KvzKZtNaFddnSAQWZ+DXg78CHgFuCQpiVqUqfYobf7Bv2YD/r+Sb0ym7bVT+2y6mjQr2bmLzLzxMz8TGZeExFfrTs4qRfs0Nt9g37MB33/pF6ZTdvqp3Y5rQEGLctzgCszc0GdwU2Xl0HVKb3uxzCMBv2YD/r+Sb0y9H3WIuIdwDuBucA9FDMXQDGLwcmZ+Y4OxNoxw5aszfZL1usvab/p5chW66o+HlupmYahbXZ6gMGHmpaYTWSYkrXZdoxsQsfKftLL2Risq/p4bKVmGpa22dEBBhTzgr4oIj4RER+PiENmGZ9mabYdI/upY2UT9HI2BuuqPh5bqZlsm3+sarJ2InAkcCVwFXBkRDiDQQ/NtmNkP3WsbIJezsZgXdXHYys1k23zj1W9DHo18IQsV46ITSgGGOxec3zTMkyXQcE+a91mn7XB5LGVmmkY2man+6ydDfx9Zv6qXH4U8OHMXDzrSDto2JI1SZLUv6oma5u2eZPvAQk8FLgmIn5avrQ38KNZRylJUxiGv6z7kfXSe9bBcGl3646/nGrjzLyo4xHNgmfWpMExLKPB+o310nvWweDoyGjQzLxo/AH8Ati6fFzTtERN0mBxNFgzWS+9Zx0Mn6rTTb0U+CnwEuClwE8i4tA6A5M03BwN1kzWS+9ZB8On6gCDnwOLMvPWcnkE+EFmPrnm+KbFy6DSYLFfTjNZL71nHQyGTo8GvTIzn9iyvAnw89ayJjBZkyRJ/aIjo0FbnBsR5wGnl8svA86ZaXCSJEmqplKylplvi4gXAU+nmMz95Mz8dq2RSZIkqfKZNTLzbODsGmORJEnSRqrODTojEXFgRFwbEddHxLETvH5MRKyMiCsi4vxyZoTx1zZExOXlY2mdcUqSJDVV5TNr0xURcygmgF8ErAIui4ilmbmyZbUVwGhm3hMRbwA+QtEfDmBtZu5RV3ySJEn9oPKZtYiYGxGPncZ77w1cn5k3ZOZ9wBnAwa0rZOYFmXlPuXgpMG8a7y9pFpatXM17v3sVy1au7nUokqQpVL0p7guAy4Fzy+U9Klya3BG4qWV5VVk2mdcC/9qyvEVEjEXEpRFxSJU4JVUzPl3NV378K5acvsKETZIarOqZtfdRnCm7AyAzLwd2abNNTFA24U3dIuIwYBT4aEvxzuW9R14BfDIiHj3JtkeUSd3YmjVOuSFV4XQ1ktQ/qiZr6zPzzmm+9ypgp5blecDNG68UEfsD7wIOysx7x8sz8+by3xuAC4GFE31IZp6cmaOZOToy4pQbUhVOVyNJ/aPqAIOrIuIVwJyImA8sAX7UZpvLgPkRsSvwG+DlFGfJ7hcRC4HPAweOT2VVlm8L3JOZ90bE9sC+FIMPJHXAogU7cMLihU5XI0l9oGqy9iaKs1/3Al8HzgP+caoNMnN9RBxdrjsHOCUzr46I44GxzFxKcdlzK+CsiAD4dWYeBDwe+HxE/IHi7N+HNxpFKmmWFi3YwSRNkvpApblB+4Vzg0qSpH5RdW7QqqNBl0XEw1qWty3nCpUkSVKNqg4w2D4z7xhfyMzbgUfUE5IkSZLGVU3W/hARO48vlNNCDc71U0mSpIaqOsDgXcB/RMRF5fIzgCPqCUmSJEnjKiVrmXluROwJ7ENxs9u/z8zf1hqZJEmSpjWR+58At5XbLIgIMvPiesKSJEkSVEzWIuKfgJcBVwN/KIsTMFmTJEmqUdUza4cAj22dDkqSJEn1qzoa9AZgszoDkSRJ0oNVPbN2D3B5RJxPMeUUAJm5pJaoNGPLVq52vkdJkgZI1WRtaflQgy1buZolp69g7boNnDW2ihMWLzRhkySpz1W9dcdpETEX2Dkzr605Js3QJdetYe26DQCsXbeBS65bY7ImSVKfqzo36AuAy4Fzy+U9IsIzbQ2z3/wR5m42B4C5m81hv/kjPY5IkiTNVtXLoO8D9gYuBMjMyyNi15pi0gwtWrADJyxeaJ81SZIGSNVkbX1m3hkRrWXODdpAixbsYJImqS0HI0n9o2qydlVEvAKYExHzgSXAj+oLS5JUFwcjSf2l6n3W3gTsTnHbjtOB3wFvqSsoSVJ9JhqMJKm5KiVrmXlPZr4rM/8iM0fL5/9bd3CSpM5zMJLUX6rODXoBE/RRy8xndTwiSVKtHIwk9Zeqfdbe2vJ8C+DFwPrOhyNJ6gYHI0n9o+pNcZdvVPTDiLiohngkSZLUoupl0O1aFjcB9gL+tJaIJEmSdL+ql0GXU/RZC4rLnzcCr60rKEmSJBWqXgZ1tgJJkqQeqHoZ9EVTvZ6ZZ3cmHEmSJLWqehn0tcDTgH8vl/+KYp7QOykuj5qsSZIk1aBqspbAgsy8BSAi/gw4MTNfXVtkkiRJqjzd1C7jiVppNfCYGuKRJElSi6pn1i6MiPMo5gVN4OXABbVFJUmSJKD6aNCjI+KFwDPKopMz89v1hSVJkiSofmYN4GfAXZn5g4h4SERsnZl31RWYJEmSpuizFhHzWp7/HfBN4PNl0Y7Ad+oNTZIkSVMNMHhGRCwpnx8F7Av8DiAzrwMeUXNskiRJQ2/SZC0zvw78vly8LzPvG38tIjalGGggSZKkGk15647MPKV8emFEvBOYGxGLgLOA79UdnCRJ0rCrep+1Y4E1wJXA64FzgHfXFZQkSZIKbUeDRsQc4LTMPAz4Qv0hSZIkaVzbM2uZuQEYiYjNuxCPJEmSWlS9z9ovgR9GxFLg7vHCzPxEHUFJkiSpUDVZu7l8bAJsXV84kiRJajVlshYRX83MvwHuyMxPdSkmSZIkldr1WdsrIh4FvCYito2I7Vof3QhQkiRpmLW7DPo54FxgN2A5EC2vZVkuSZKkmrS7Ke4Jmfl44JTM3C0zd215mKhJkiTVrNJNcTPzDXUHIkmSpAerOoOBJEmSeqDWZC0iDoyIayPi+og4doLXj4mIlRFxRUScXw5mGH/t8Ii4rnwcXmeckiRJTVVbslZOU3Ui8FxgAbA4IhZstNoKYDQznwR8E/hIue12wHHAU4C9geMiYtu6YpUkSWqqOs+s7Q1cn5k3ZOZ9wBnAwa0rZOYFmXlPuXgpMK98/hxgWWbelpm3A8uAA2uMVZIkqZHqTNZ2BG5qWV5Vlk3mtcC/TnfbiDgiIsYiYmzNmjWzCFeSJKl56kzWYoKynHDFiMOAUeCj0902M0/OzNHMHB0ZGZlRoJIkSU1VZ7K2CtipZXkexfyifyQi9gfeBRyUmfdOZ1tJkqRBV2eydhkwPyJ2jYjNgZcDS1tOuG7DAAAKDElEQVRXiIiFwOcpErVbW146DzignOJqW+CAskySJGmotJtuasYyc31EHE2RZM2hmAXh6og4HhjLzKUUlz23As6KCIBfZ+ZBmXlbRHyAIuEDOD4zb6srVkmSpKaKzAm7gvWl0dHRHBsb63UYkiRJbUXE8swcbbeeMxhIkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmSJDWYyZokSVKDmaxJkiQ1mMmaJElSg5msSZIkNZjJmiRJUoNFZvY6ho6JiDXAr2r+mO2B39b8GZoZ66aZrJfmsm6ayXpprk7XzaMyc6TdSgOVrHVDRIxl5miv49CDWTfNZL00l3XTTNZLc/WqbrwMKkmS1GAma5IkSQ1msjZ9J/c6AE3Kumkm66W5rJtmsl6aqyd1Y581SZKkBvPMmiRJUoOZrEmSJDWYydo0RMSBEXFtRFwfEcf2Op5hFRE7RcQFEXFNRFwdEW8uy7eLiGURcV3577a9jnUYRcSciFgREd8vl3eNiJ+U9fKNiNi81zEOo4h4WER8MyJ+Ubadp9pmmiEi/r78LbsqIk6PiC1sN90XEadExK0RcVVL2YRtJAonlPnAFRGxZ52xmaxVFBFzgBOB5wILgMURsaC3UQ2t9cD/yczHA/sAR5V1cSxwfmbOB84vl9V9bwauaVn+J+Cfy3q5HXhtT6LSp4BzM/NxwJMp6sg202MRsSOwBBjNzCcAc4CXY7vphS8DB25UNlkbeS4wv3wcAZxUZ2Ama9XtDVyfmTdk5n3AGcDBPY5pKGXmLZn5s/L5XRT/6exIUR+nlaudBhzSmwiHV0TMA54HfLFcDuBZwDfLVayXHoiIbYBnAF8CyMz7MvMObDNNsSkwNyI2BR4C3ILtpusy82Lgto2KJ2sjBwNfycKlwMMi4s/qis1krbodgZtalleVZeqhiNgFWAj8BNghM2+BIqEDHtG7yIbWJ4G3A38olx8O3JGZ68tl201v7AasAU4tL1F/MSK2xDbTc5n5G+BjwK8pkrQ7geXYbppisjbS1ZzAZK26mKDM+570UERsBXwLeEtm/q7X8Qy7iHg+cGtmLm8tnmBV2033bQrsCZyUmQuBu/GSZyOUfaAOBnYFHglsSXGJbWO2m2bp6m+byVp1q4CdWpbnATf3KJahFxGbUSRqX8vMs8vi1eOnoct/b+1VfENqX+CgiPglRTeBZ1GcaXtYeXkHbDe9sgpYlZk/KZe/SZG82WZ6b3/gxsxck5nrgLOBp2G7aYrJ2khXcwKTteouA+aXI3Q2p+gAurTHMQ2lsh/Ul4BrMvMTLS8tBQ4vnx8OfLfbsQ2zzHxHZs7LzF0o2se/Z+YrgQuAQ8vVrJceyMz/Bm6KiMeWRc8GVmKbaYJfA/tExEPK37bxurHdNMNkbWQp8LflqNB9gDvHL5fWwRkMpiEi/priTMEc4JTM/GCPQxpKEfF04BLgSh7oG/VOin5rZwI7U/wAviQzN+4sqi6IiGcCb83M50fEbhRn2rYDVgCHZea9vYxvGEXEHhQDPzYHbgBeTfEHu22mxyLi/cDLKEa6rwBeR9H/yXbTRRFxOvBMYHtgNXAc8B0maCNlYv0ZitGj9wCvzsyx2mIzWZMkSWouL4NKkiQ1mMmaJElSg5msSZIkNZjJmiRJUoOZrEmatojYNyL263UckjQMTNYkTUtELKS47cOlbdZ7X0S8tUOfeUhELGhZPj4i9i+fXxgRo+XzX0bE9p34zAox3f+5Fdd/VUQ8ssJ6Hdm3iPhaRFwbEVdFxCnljaQp7wt1QkRcHxFXRMSeLdscHhHXlY/DJ393Sd1ksiZpWjJzRWa+rrzberccAtyfrGXmezPzB138/E54FcV0QlPq4L59DXgc8ERgLsW9u6CYymh++TgCOAkgIrajuK/UU4C9gePKqZAk9ZjJmqTKIuKwiPhpRFweEZ+PiDll+YER8bOI+HlEnN+yyYLy7NANEbGk5X2+ExHLI+LqiDiipfz3EfHB8n0ujYgdIuJpwEHAR8vPfXREfDkiDmUKEXFMeVbpqoh4S1m2S0RcExFfKD/73yJibvnakohYWZ5tOmOC95sbEWeUr3+DIgEaf+2AiPhxeQzOKuetbd32UGAU+Fq5D3Mj4r0RcVkZ38nlTTapuG8T1kOrzDwnS8BPKabDgWIeyq+UL11KMa3RnwHPAZZl5m2ZeTuwjOKGn5J6zGRNUiUR8XiKu6zvm5l7ABuAV0bECPAF4MWZ+WTgJS2bPY4iCRg/U7NZWf6azNyLIoFZEhEPL8u3BC4t3+di4O8y80cUU7u8LTP3yMz/qhDrXhSXap8C7AP8XXn5FoozSidm5u7AHcCLy/JjgYWZ+STgyAne9g3APeXrHwT2Kj9re+DdwP6ZuScwBhzTumFmfrMsf2W5D2uBz2TmX2TmEygSv+e326/y8yashynW3wz4G+DcsmhH4KaWVVaVZZOVS+qxTduvIklAMWfhXsBl5UmguRSTGu8DXJyZNwJsNF3Rv5RT5NwbEbcCO1AkAUsi4oXlOjtRJFD/A9wHfL8sXw4smmGsTwe+nZl3A0TE2cB+FEnfjZl5ectn7FI+v4LizNd3KKaY2dgzgBPKfbwiIq4oy/ehuET7w/K4bA78uEKMfxURbwceQjGl0NXA9ypsN1k9TOazFPVzSbkcE6yTU5RL6jGTNUlVBXBaZr7jjwojDmLy/9Rb5zLcAGwaxbyh+wNPzcx7IuJCYItynXX5wBx4G5j5b9REicdkMY1fznweRUJ2EPCeiNg9M9dvtO1E+xkUlw8XVw4uYguKJGo0M2+KiPfxwDFouzkT1MMkn3McMAK8vqV4FUWCPG4ecHNZ/syNyi+sGJOkGnkZVFJV5wOHRsQjoOiQHhGPojiL9JcRset4eZv3eShwe5moPY7izFQ7dwFbTyPWi4FDIuIhEbEl8ELgkslWjohNgJ0y8wLg7cDDgK02Wu1iysuNEfEE4Ell+aXAvhHx5+VrD4mIx7TZh/HE7Ldl/7Yp+6htZLJ62HifXkdxCXpxZv6h5aWlwN+Wo0L3Ae7MzFuA84ADImLbcmDBAWWZpB7zzJqkSjJzZUS8G/i3MrlZBxyVmZeWgwTOLstvZerLl+cCR5aXEa+lzS1ASmcAXygHKbRNbDLzZxHxZYqO9QBfzMwVEbHLJJvMAf5fRDyU4szVP2fmHRutcxJwahn35ePvnZlrIuJVwOkR8Sfluu8G/nOj7b8MfC4i1gJPpejndyXwS+CydvvUsm8T1gPwq41W/VxZ9uPycunZmXk8cA7w18D1wD0UffvIzNsi4gMtsRy/0SVtST0SD1xxkCRJUtN4GVSSJKnBTNYkSZIazGRNkiSpwUzWJEmSGsxkTZIkqcFM1iRJkhrMZE2SJKnB/j9wbsnBTw7ORQAAAABJRU5ErkJggg==\n",
+      "text/plain": [
+       "<Figure size 720x360 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<Figure size 432x288 with 0 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "plt.figure(figsize = (10, 5))\n",
+    "plt.ylim(ymin - 0.05, ymax + 0.05)\n",
+    "plt.xlabel(\"échantillons de taille 200\")\n",
+    "plt.ylabel(\"fréquence obtenue par l'échantillon simulé\")\n",
+    "plt.scatter(x, freq_simul, s=10)\n",
+    "plt.show()\n",
+    "plt.savefig('simul200.png', dpi = 600)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Simulation de 100 recaptures pour des échantillons de taille 200, puis 600 et 1000"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On simule 100 fois une recapture d'un échantillon de 200 individus, puis 100 fois une recapture d'un échantillon de 600 et à nouveau 100 fois une recapture d'un échantillon de 1000 individus.<br/>\n",
+    "On représente ensuite graphiquement les 100 simulations dans les trois cas."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "list_freq_simul = [multi_echantillon(100, population, 200 + 400 * i) for i in range(3)]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ymin = min([min(list_freq_simul[i]) for i in range(3)])\n",
+    "ymax = max([max(list_freq_simul[i]) for i in range(3)])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "p = [marques/pop_totale]*100\n",
+    "\n",
+    "plt.figure(figsize = (18, 5))\n",
+    "for i in range(3):\n",
+    "    bi = [marques/pop_totale-1/sqrt(200+400*i)]*100\n",
+    "    bs = [marques/pop_totale+1/sqrt(200+400*i)]*100\n",
+    "    plt.subplot(1, 3, i+1)\n",
+    "    plt.ylim(ymin - 0.05, ymax + 0.05)\n",
+    "    plt.xlabel(\"échantillons de taille {}\".format(200+400*i))\n",
+    "    plt.ylabel(\"fréq. obtenue par l'échantillon simulé\")\n",
+    "    plt.scatter(x, list_freq_simul[i], s=10)\n",
+    "    plt.plot(x, p, 'g--')\n",
+    "    plt.plot(x, bi, '--', color = 'orange')\n",
+    "    plt.plot(x, bs, '--', color = 'orange')\n",
+    "#plt.show()\n",
+    "plt.savefig('simul_multiple.png', dpi = 600)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Représentation des intervalles de confiance"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Pour chaque échantillon, on détermine un intervalle de confiance à 95 % permettant d'encadrer la véritable proportion.<br/>\n",
+    "Pour chaque fréquence $f$, sur un échantillon de taille $n$, un intervalle de confiance, au niveau de 95%, est: $$\\left[ f-\\frac{1}{\\sqrt{n}};f+\\frac{1}{\\sqrt{n}}\\right]$$\n",
+    "Pour chaque fréquence de chaque échantillon, on trace l'intervalle de confiance correspondant.<br/>\n",
+    "Plus $n$ est grand, plus l'intervalle de confiance est étroit."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "demi_ampli_confiance = [[1/sqrt(200+400*i)] * 100 for i in range(3)]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize = (18, 12))\n",
+    "for i in range(3):\n",
+    "    plt.subplot(3, 1, i+1)\n",
+    "    plt.ylim(ymin-0.075, ymax+0.075)\n",
+    "    plt.xlabel(\"échantillons de taille {}\".format(200+400*i))\n",
+    "    plt.ylabel(\"fréq. obtenue par l'échantillon simulé\")\n",
+    "    plt.scatter(x, list_freq_simul[i], s=14)\n",
+    "    plt.errorbar(x, list_freq_simul[i], yerr = demi_ampli_confiance[i], fmt = 'none', capsize = 4, errorevery = 1, ecolor = 'red')\n",
+    "#plt.show()\n",
+    "plt.savefig('simul_multiple_confiance.png', dpi = 600)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## La proportion théorique est presque toujours dans l'intervalle de confiance"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "La population totale est contenue dans la variable `pop_totale` et le nombre d'individus marqués dans `marques`. La proportion d'individus marqués est le quotient de ces deux valeurs."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "marques/pop_totale"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On ajoute cette valeur (ligne pointillée) aux représentations graphiques ci-dessus pour observer que cette proportion appartient presque toujours aux intervalles de confiance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "p = [marques/pop_totale]*100\n",
+    "\n",
+    "plt.figure(figsize = (18, 12))\n",
+    "for i in range(3):\n",
+    "    plt.subplot(3, 1, i+1)\n",
+    "    plt.ylim(ymin-0.075, ymax+0.075)\n",
+    "    plt.xlabel(\"échantillons de taille {}\".format(200+400*i))\n",
+    "    plt.ylabel(\"fréq. obtenue par l'échantillon simulé\")\n",
+    "    plt.scatter(x, list_freq_simul[i], s=14)\n",
+    "    plt.plot(x, p, 'g--')\n",
+    "    plt.errorbar(x, list_freq_simul[i], yerr = demi_ampli_confiance[i], fmt = 'none', capsize = 4, errorevery = 1, ecolor = 'red')\n",
+    "#plt.show()\n",
+    "plt.savefig('simul_multiple_confiance_theorie.png', dpi = 600)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
